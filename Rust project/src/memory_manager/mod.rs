@@ -1,9 +1,7 @@
 mod memory_block;
-mod allocated_block;
-mod free_block;
 
-use allocated_block::AllocatedBlock;
-use free_block::FreeBlock;
+use memory_block::allocated_block::AllocatedBlock;
+use memory_block::free_block::FreeBlock;
 
 pub struct MemoryManager {
     data: Vec<u8>,
@@ -19,4 +17,24 @@ impl MemoryManager {
             allocated_handles: Vec::new(),
         }
     }
+
+    pub fn insert(&mut self, size: usize, data: String) -> usize{
+        0
+    }
+    pub fn read(&self, id: usize) -> Option<&str> {
+        // Read logic
+        Some("example")
+    }
+    pub fn delete(&mut self, id: usize) {
+        // Delete logic
+    }
+    pub fn update(&mut self, id: usize, new_data: String) -> bool {
+        // Update logic
+        true
+    }
+    pub fn dump(&self) {
+        // Dump memory state
+    }
+    
 }
+
