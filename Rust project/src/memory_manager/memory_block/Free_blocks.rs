@@ -1,3 +1,5 @@
+use super::MemoryBlock;
+
 pub struct FreeBlock {
     pub start: usize,
     pub size: usize,
@@ -34,5 +36,15 @@ impl FreeBlock {
         let new_start = usize::min(self.start, other.start);
         let new_size = self.size + other.size;
         FreeBlock::new(new_start, new_size)
+    }
+}
+
+impl MemoryBlock for FreeBlock {
+    fn get_start(&self) -> usize {
+        self.start
+    }
+
+    fn get_size(&self) -> usize {
+        self.size
     }
 }
