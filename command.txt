@@ -1,0 +1,3 @@
+INSERT 10 Hello
+READ 1
+DELETE 2
