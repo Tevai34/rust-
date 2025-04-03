@@ -2,9 +2,10 @@
 //!
 //! This program reads a command file, parses commands, and interacts with a memory manager.
 
-use rust_template::file_parser::FileParser;
-use rust_template::memory_manager::MemoryManager;
 use std::env;
+use memory_manager::file_parser::FileParser;
+use memory_manager::memory_manager::MemoryManager;
+
 
 /// The main entry point of the program.
 fn main() {
@@ -19,18 +20,18 @@ fn main() {
     let file_path = &args[1];
 
     // Initialize the file parser
-    let parser = FileParser::new(file_path);
+    let parser = FileParser::new(file_path).unwrap();
     
     // Initialize the memory manager
     let mut memory_manager = MemoryManager::new();
 
     // Process parsed commands
     for command in parser.commands {
-        match command.function.as_str() {
+        match command.get_command() {
             "INSERT" => {
-                if command.parameters.len() >= 2 {
-                    if let Ok(size) = command.parameters[0].parse::<usize>() {
-                        let data = command.parameters[1].clone();
+                if command.get_parameters().len() >= 2 {
+                    if let Ok(size) = command.get_parameters()[0].parse::<usize>() {
+                        let data = command.get_parameters()[1].clone();
                         let id = memory_manager.insert(size, data);
                         println!("Inserted block with ID: {}", id);
                     } else {
@@ -41,7 +42,7 @@ fn main() {
                 }
             }
             "READ" => {
-                if let Some(id) = command.parameters.get(0).and_then(|s| s.parse::<usize>().ok()) {
+                if let Some(id) = command.get_parameters().get(0).and_then(|s| s.parse::<usize>().ok()) {
                     match memory_manager.read(id) {
                         Some(data) => println!("Data at {}: {}", id, data),
                         None => println!("Nothing at {}", id),
@@ -51,7 +52,7 @@ fn main() {
                 }
             }
             "DELETE" => {
-                if let Some(id) = command.parameters.get(0).and_then(|s| s.parse::<usize>().ok()) {
+                if let Some(id) = command.get_parameters().get(0).and_then(|s| s.parse::<usize>().ok()) {
                     memory_manager.delete(id);
                     println!("Deleted block {}", id);
                 } else {
@@ -59,9 +60,9 @@ fn main() {
                 }
             }
             "UPDATE" => {
-                if command.parameters.len() >= 2 {
-                    if let Ok(id) = command.parameters[0].parse::<usize>() {
-                        let new_data = command.parameters[1].clone();
+                if command.get_parameters().len() >= 2 {
+                    if let Ok(id) = command.get_parameters()[0].parse::<usize>() {
+                        let new_data = command.get_parameters()[1].clone();
                         if memory_manager.update(id, new_data) {
                             println!("Updated block {}", id);
                         } else {
@@ -78,7 +79,7 @@ fn main() {
                 memory_manager.dump();
             }
             _ => {
-                eprintln!("Unknown command: {}", command.function);
+                eprintln!("Unknown command: {}", command.get_command());
             }
         }
     }
