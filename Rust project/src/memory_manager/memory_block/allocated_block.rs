@@ -1,3 +1,5 @@
+use super::MemoryBlock;
+
 /// Represents an allocated memory block
 pub struct AllocatedBlock {
     pub start: usize,
@@ -39,5 +41,15 @@ impl AllocatedBlock {
     /// * `true` if the blocks are adjacent and both free, otherwise `false`
     pub fn can_merge(&self, other: &AllocatedBlock) -> bool {
         self.is_free && other.is_free && (self.start + self.size == other.start)
+    }
+}
+
+impl MemoryBlock for AllocatedBlock {
+    fn get_start(&self) -> usize {
+        self.start
+    }
+
+    fn get_size(&self) -> usize {
+        self.size
     }
 }
