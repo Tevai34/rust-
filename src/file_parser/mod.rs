@@ -11,13 +11,13 @@ pub struct FileParser {
 }
 
 impl FileParser {
-    /// Creates a new `FileParser` instance from a file.
+    /// Creates a new FileParser instance from a file.
     ///
     /// # Arguments
-    /// * `file_path` - A string slice representing the file path.
+    /// * file_path - A string slice representing the file path.
     ///
     /// # Returns
-    /// * `io::Result<FileParser>` - A `Result` containing the `FileParser` instance if successful.
+    /// * io::Result<FileParser> - A `Result` containing the `FileParser` instance if successful.
     pub fn new(file_path: &str) -> io::Result<Self> {
         let commands = Self::parse_commands(file_path)?;
         Ok(Self { commands })
