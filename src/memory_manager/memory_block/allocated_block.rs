@@ -12,12 +12,12 @@ impl AllocatedBlock {
     /// Creates a new allocated block
     ///
     /// # Arguments
-    /// * `start` - The starting index of the block
-    /// * `size` - The size of the block
-    /// * `id` - The identifier for the block
+    /// * start - The starting index of the block
+    /// * size - The size of the block
+    /// * id - The identifier for the block
     ///
     /// # Returns
-    /// * A new instance of `AllocatedBlock`
+    /// * A new instance of AllocatedBlock
     pub fn new(start: usize, size: usize, id: usize) -> Self {
         Self {
             start,
@@ -35,10 +35,10 @@ impl AllocatedBlock {
     /// Checks if a block can be merged with another
     ///
     /// # Arguments
-    /// * `other` - The other block to check for merging
+    /// * other - The other block to check for merging
     ///
     /// # Returns
-    /// * `true` if the blocks are adjacent and both free, otherwise `false`
+    /// * true if the blocks are adjacent and both free, otherwise false
     pub fn can_merge(&self, other: &AllocatedBlock) -> bool {
         self.is_free && other.is_free && (self.start + self.size == other.start)
     }
