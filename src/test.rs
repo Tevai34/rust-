@@ -1,8 +1,6 @@
 #[cfg(test)]
 mod tests {
     use super::memory_manager::MemoryManager;
-
-    // -------- INSERT TESTS --------
     #[test]
     fn test_insert_and_read() {
         let mut manager = MemoryManager::new();
@@ -42,7 +40,6 @@ mod tests {
         assert_eq!(manager.read(id), Some("big".to_string()));
     }
 
-    // -------- UPDATE TESTS --------
     #[test]
     fn test_update() {
         let mut manager = MemoryManager::new();
@@ -85,7 +82,6 @@ mod tests {
         assert!(!updated);
     }
 
-    // -------- READ (GET) TESTS --------
     #[test]
     fn test_read_nonexistent_id() {
         let manager = MemoryManager::new();
@@ -126,7 +122,6 @@ mod tests {
         assert_eq!(manager.read(0), None);
     }
 
-    // -------- DELETE TESTS --------
     #[test]
     fn test_delete() {
         let mut manager = MemoryManager::new();
