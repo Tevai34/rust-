@@ -12,7 +12,7 @@ impl FreeBlock {
     }
 
     /// Splits the free block into two if the requested size is smaller than the current size.
-    /// Returns `Some(FreeBlock)` with the remaining space if a split occurs, otherwise `None`.
+    /// Returns Some(FreeBlock) with the remaining space if a split occurs, otherwise None.
     pub fn split(&mut self, requested_size: usize) -> Option<FreeBlock> {
         if requested_size > self.size {
             return None;
