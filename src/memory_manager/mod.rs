@@ -25,35 +25,36 @@ impl MemoryManager {
         if bytes.len() > size {
             panic!("Data is larger than the block size.");
         }
-
-        if let Some((index, free_block)) = self
+    
+        if let Some((index, _)) = self
             .free_handles
             .iter()
             .enumerate()
             .find(|(_, block)| block.size >= size)
         {
-            let start = free_block.start;
-
+            let mut selected_block = self.free_handles.remove(index);
+            let start = selected_block.start;
+    
+            // Use split to get the remaining block (if any)
+            if let Some(remaining) = selected_block.split(size) {
+                self.free_handles.push(remaining);
+            }
+    
+            // Write the data into memory
             for i in 0..bytes.len() {
                 self.data[start + i] = bytes[i];
             }
-
-            if free_block.size == size {
-                self.free_handles.remove(index);
-            } else {
-                self.free_handles[index].start += size;
-                self.free_handles[index].size -= size;
-            }
-
+    
             let block = AllocatedBlock::new(start, size, self.next_id);
             self.allocated_handles.push(block);
-
+    
             self.next_id += 1;
             self.next_id - 1
         } else {
             panic!("No sufficient memory block found.");
         }
     }
+    
 
     pub fn read(&self, id: usize) -> Option<String> {
         self.allocated_handles
@@ -75,7 +76,21 @@ impl MemoryManager {
                 self.data[i] = 0;
             }
 
-            self.free_handles.push(FreeBlock::new(block.start, block.size));
+            let mut new_free = FreeBlock::new(block.start, block.size);
+
+            // Merge with adjacent free blocks
+            let mut merged = false;
+            self.free_handles.retain(|fb| {
+                if fb.can_merge(&new_free) {
+                    new_free = fb.merge(&new_free);
+                    merged = true;
+                    false 
+                } else {
+                    true 
+                }
+            });
+
+            self.free_handles.push(new_free);
         }
     }
 
