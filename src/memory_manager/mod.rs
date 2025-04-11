@@ -2,6 +2,7 @@ mod memory_block;
 
 use memory_block::allocated_block::AllocatedBlock;
 use memory_block::free_block::FreeBlock;
+use memory_block::MemoryBlock;
 
 pub struct MemoryManager {
     data: Vec<u8>,
@@ -14,7 +15,7 @@ impl MemoryManager {
     pub fn new() -> Self {
         Self {
             data: vec![0; 65535],
-            free_handles: vec![FreeBlock { start: 0, size: 65535 }],
+            free_handles: vec![FreeBlock::new(0, 65535)],
             allocated_handles: Vec::new(),
             next_id: 1,
         }
@@ -25,7 +26,7 @@ impl MemoryManager {
         if bytes.len() > size {
             panic!("Data is larger than the block size.");
         }
-    
+
         if let Some((index, _)) = self
             .free_handles
             .iter()
@@ -34,27 +35,26 @@ impl MemoryManager {
         {
             let mut selected_block = self.free_handles.remove(index);
             let start = selected_block.start;
-    
-            // Use split to get the remaining block (if any)
-            if let Some(remaining) = selected_block.split(size) {
-                self.free_handles.push(remaining);
+
+            // Split the free block
+            if let Some(remaining_block) = selected_block.split(size) {
+                self.free_handles.push(remaining_block);
             }
-    
-            // Write the data into memory
+
+            // Write data
             for i in 0..bytes.len() {
                 self.data[start + i] = bytes[i];
             }
-    
+
             let block = AllocatedBlock::new(start, size, self.next_id);
             self.allocated_handles.push(block);
-    
+
             self.next_id += 1;
             self.next_id - 1
         } else {
             panic!("No sufficient memory block found.");
         }
     }
-    
 
     pub fn read(&self, id: usize) -> Option<String> {
         self.allocated_handles
@@ -76,21 +76,7 @@ impl MemoryManager {
                 self.data[i] = 0;
             }
 
-            let mut new_free = FreeBlock::new(block.start, block.size);
-
-            // Merge with adjacent free blocks
-            let mut merged = false;
-            self.free_handles.retain(|fb| {
-                if fb.can_merge(&new_free) {
-                    new_free = fb.merge(&new_free);
-                    merged = true;
-                    false 
-                } else {
-                    true 
-                }
-            });
-
-            self.free_handles.push(new_free);
+            self.free_handles.push(FreeBlock::new(block.start, block.size));
         }
     }
 
@@ -113,17 +99,33 @@ impl MemoryManager {
 
     pub fn dump(&self) {
         println!("== Memory Dump ==");
+
         for block in &self.allocated_handles {
-            if !block.is_free {
-                println!(
-                    "Block ID {}: start={}, size={}, data='{}'",
-                    block.id,
-                    block.start,
-                    block.size,
-                    self.read(block.id).unwrap_or_default()
-                );
-            }
+            let status = if block.is_free { "Free (was allocated)" } else { "Allocated" };
+            let data_str = if !block.is_free {
+                self.read(block.id).unwrap_or_default()
+            } else {
+                String::new()
+            };
+            println!(
+                "Block ID {}: start={}, size={}, status={}, data='{}'",
+                block.id,
+                block.start,
+                block.size,
+                status,
+                data_str
+            );
+        }
+
+        for (i, block) in self.free_handles.iter().enumerate() {
+            println!(
+                "Free Block {}: start={}, size={}",
+                i + 1,
+                block.start,
+                block.size
+            );
         }
     }
 }
+
 
