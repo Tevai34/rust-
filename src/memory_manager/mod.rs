@@ -22,39 +22,45 @@ impl MemoryManager {
     }
 
     pub fn insert(&mut self, size: usize, data: String) -> usize {
+        let aligned_size = size.next_power_of_two();
         let bytes = data.as_bytes();
-        if bytes.len() > size {
-            panic!("Data is larger than the block size.");
+        if bytes.len() > aligned_size {
+            panic!("Data is larger than the aligned block size.");
         }
-
+    
         if let Some((index, _)) = self
             .free_handles
             .iter()
             .enumerate()
-            .find(|(_, block)| block.size >= size)
+            .find(|(_, block)| block.size >= aligned_size)
         {
             let mut selected_block = self.free_handles.remove(index);
-            let start = selected_block.start;
-
-            // Split the free block
-            if let Some(remaining_block) = selected_block.split(size) {
-                self.free_handles.push(remaining_block);
+    
+            // Split the block down to the right size
+            while selected_block.size > aligned_size {
+                let half_size = selected_block.size / 2;
+                let buddy_start = selected_block.start + half_size;
+                self.free_handles.push(FreeBlock::new(buddy_start, half_size));
+                selected_block = FreeBlock::new(selected_block.start, half_size);
             }
-
-            // Write data
+    
+            let start = selected_block.start; 
+    
+            // Write data into memory
             for i in 0..bytes.len() {
                 self.data[start + i] = bytes[i];
             }
-
-            let block = AllocatedBlock::new(start, size, self.next_id);
+    
+            let block = AllocatedBlock::new(start, aligned_size, self.next_id);
             self.allocated_handles.push(block);
-
+    
             self.next_id += 1;
             self.next_id - 1
         } else {
             panic!("No sufficient memory block found.");
         }
     }
+    
 
     pub fn read(&self, id: usize) -> Option<String> {
         self.allocated_handles
